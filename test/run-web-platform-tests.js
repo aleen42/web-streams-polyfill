@@ -183,9 +183,7 @@ async function runTests(entryFile, { excludedTests = [], ignoredFailures = {} } 
       if (workerTestPattern.test(testPath)) {
         return false;
       }
-
-      return includeMatcher(testPath) &&
-          !excludeMatcher(testPath);
+      return includeMatcher(testPath) && !excludeMatcher(testPath);
     }
   });
 
