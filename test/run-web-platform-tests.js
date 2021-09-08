@@ -35,10 +35,7 @@ async function main() {
   const supportsES2018 = runtimeSupportsAsyncGenerators();
 
   const excludedTests = [
-    // We cannot polyfill TransferArrayBuffer yet, so disable tests for detached array buffers
-    // See https://github.com/MattiasBuelens/web-streams-polyfill/issues/3
-    'readable-byte-streams/bad-buffers-and-views.any.html',
-    'readable-byte-streams/enqueue-with-detached-buffer.window.html',
+    // We cannot detect non-transferability, and Node's WebAssembly.Memory is also not marked as such
     'readable-byte-streams/non-transferable-buffers.any.html',
     // Disable tests for different size functions per realm, since they need a working <iframe>
     'queuing-strategies-size-function-per-global.window.html',
@@ -46,14 +43,11 @@ async function main() {
     'transferable/**'
   ];
   const ignoredFailures = {
-    // We cannot transfer byobRequest.view.buffer after respond() or enqueue()
-    'readable-byte-streams/general.any.html': [
-      'ReadableStream with byte source: read(view) with Uint32Array, then fill it by multiple respond() calls',
-      'ReadableStream with byte source: read(view) with Uint32Array, then fill it by multiple enqueue() calls'
-    ],
-    // Same thing: the enqueued chunk will have the same buffer as branch1's chunk
-    'readable-byte-streams/tee.any.html': [
-      'ReadableStream teeing with byte source: chunks should be cloned for each branch'
+    // We cannot distinguish between a zero-length ArrayBuffer and a detached ArrayBuffer,
+    // so we incorrectly throw a TypeError instead of a RangeError
+    'readable-byte-streams/bad-buffers-and-views.any.html': [
+      'ReadableStream with byte source: respondWithNewView() throws if the supplied view\'s buffer is zero-length ' +
+      '(in the closed state)'
     ],
     // Our async iterator won't extend from the built-in %AsyncIteratorPrototype%
     'readable-streams/async-iterator.any.html': [
@@ -160,6 +154,27 @@ async function runTests(entryFile, { excludedTests = [], ignoredFailures = {} } 
             return await readFileAsync(filePath, { encoding: 'utf8' });
           }
         };
+      };
+      const isFakeDetached = new WeakSet();
+      const transferArrayBuffer = buffer => {
+        const transferredIshVersion = buffer.slice(0);
+        window.Object.defineProperty(buffer, 'byteLength', {
+          get: () => 0
+        });
+        isFakeDetached.add(buffer);
+        return transferredIshVersion;
+      };
+      const structuredClone = (value, { transfer }) => {
+        if (value instanceof window.ArrayBuffer && transfer.includes(value) && !isFakeDetached.has(value)) {
+          return transferArrayBuffer(value);
+        }
+        throw new TypeError(`Unexpected call to structuredClone`);
+      };
+      window.structuredClone = structuredClone;
+      const originalPostMessage = window.postMessage;
+      window.postMessage = function (message, targetOrigin, transfer) {
+        message = structuredClone(message, { transfer });
+        return originalPostMessage.call(window, message, targetOrigin, transfer);
       };
       window.eval(bundledJS);
     },
