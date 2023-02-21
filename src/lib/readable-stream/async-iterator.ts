@@ -112,7 +112,7 @@ export class ReadableStreamAsyncIteratorImpl<R> {
       return promiseRejectedWith(readerLockException('finish iterating'));
     }
 
-    assert(reader._readRequests.length === 0);
+    assert(reader._readRequests.getLength() === 0);
 
     if (!this._preventCancel) {
       const result = ReadableStreamReaderGenericCancel(reader, value);

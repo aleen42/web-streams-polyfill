@@ -540,7 +540,7 @@ function WritableStreamMarkCloseRequestInFlight(stream: WritableStream) {
 
 function WritableStreamMarkFirstWriteRequestInFlight(stream: WritableStream) {
   assert(stream._inFlightWriteRequest === undefined);
-  assert(stream._writeRequests.length !== 0);
+  assert(stream._writeRequests.getLength() !== 0);
   stream._inFlightWriteRequest = stream._writeRequests.shift();
 }
 
@@ -1191,7 +1191,7 @@ function WritableStreamDefaultControllerAdvanceQueueIfNeeded<W>(controller: Writ
     return;
   }
 
-  if (controller._queue.length === 0) {
+  if (controller._queue.getLength() === 0) {
     return;
   }
 
@@ -1215,7 +1215,7 @@ function WritableStreamDefaultControllerProcessClose(controller: WritableStreamD
   WritableStreamMarkCloseRequestInFlight(stream);
 
   DequeueValue(controller);
-  assert(controller._queue.length === 0);
+  assert(controller._queue.getLength() === 0);
 
   const sinkClosePromise = controller._closeAlgorithm();
   WritableStreamDefaultControllerClearAlgorithms(controller);

@@ -37,7 +37,7 @@ export class SimpleQueue<T> {
     this._size = 0;
   }
 
-  get length(): number {
+  getLength(): number {
     return this._size;
   }
 

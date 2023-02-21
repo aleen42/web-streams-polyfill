@@ -528,7 +528,7 @@ function ReadableByteStreamControllerFillPullIntoDescriptorFromQueue(controller:
 function ReadableByteStreamControllerFillHeadPullIntoDescriptor(controller: ReadableByteStreamController,
                                                                 size: number,
                                                                 pullIntoDescriptor: PullIntoDescriptor) {
-  assert(controller._pendingPullIntos.length === 0 || controller._pendingPullIntos.peek() === pullIntoDescriptor);
+  assert(controller._pendingPullIntos.getLength() === 0 || controller._pendingPullIntos.peek() === pullIntoDescriptor);
   assert(controller._byobRequest === null);
   pullIntoDescriptor.bytesFilled += size;
 }
@@ -557,7 +557,7 @@ function ReadableByteStreamControllerInvalidateBYOBRequest(controller: ReadableB
 function ReadableByteStreamControllerProcessPullIntoDescriptorsUsingQueue(controller: ReadableByteStreamController) {
   assert(!controller._closeRequested);
 
-  while (controller._pendingPullIntos.length > 0) {
+  while (controller._pendingPullIntos.getLength() > 0) {
     if (controller._queueTotalSize === 0) {
       return;
     }
@@ -607,7 +607,7 @@ export function ReadableByteStreamControllerPullInto<T extends ArrayBufferView>(
     readerType: 'byob'
   };
 
-  if (controller._pendingPullIntos.length > 0) {
+  if (controller._pendingPullIntos.getLength() > 0) {
     controller._pendingPullIntos.push(pullIntoDescriptor);
 
     // No ReadableByteStreamControllerCallPullIfNeeded() call since:
@@ -767,7 +767,7 @@ export function ReadableByteStreamControllerClose(controller: ReadableByteStream
     return;
   }
 
-  if (controller._pendingPullIntos.length > 0) {
+  if (controller._pendingPullIntos.getLength() > 0) {
     const firstPendingPullInto = controller._pendingPullIntos.peek();
     if (firstPendingPullInto.bytesFilled > 0) {
       const e = new TypeError('Insufficient bytes to fill elements in the given buffer');
@@ -796,7 +796,7 @@ export function ReadableByteStreamControllerEnqueue(controller: ReadableByteStre
   }
   const transferredBuffer = TransferArrayBuffer(buffer);
 
-  if (controller._pendingPullIntos.length > 0) {
+  if (controller._pendingPullIntos.getLength() > 0) {
     const firstPendingPullInto = controller._pendingPullIntos.peek();
     if (IsDetachedBuffer(firstPendingPullInto.buffer)) {
       throw new TypeError(
@@ -810,11 +810,11 @@ export function ReadableByteStreamControllerEnqueue(controller: ReadableByteStre
 
   if (ReadableStreamHasDefaultReader(stream)) {
     if (ReadableStreamGetNumReadRequests(stream) === 0) {
-      assert(controller._pendingPullIntos.length === 0);
+      assert(controller._pendingPullIntos.getLength() === 0);
       ReadableByteStreamControllerEnqueueChunkToQueue(controller, transferredBuffer, byteOffset, byteLength);
     } else {
-      assert(controller._queue.length === 0);
-      if (controller._pendingPullIntos.length > 0) {
+      assert(controller._queue.getLength() === 0);
+      if (controller._pendingPullIntos.getLength() > 0) {
         assert(controller._pendingPullIntos.peek().readerType === 'default');
         ReadableByteStreamControllerShiftPendingPullInto(controller);
       }
@@ -850,7 +850,7 @@ export function ReadableByteStreamControllerError(controller: ReadableByteStream
 export function ReadableByteStreamControllerGetBYOBRequest(
   controller: ReadableByteStreamController
 ): ReadableStreamBYOBRequest | null {
-  if (controller._byobRequest === null && controller._pendingPullIntos.length > 0) {
+  if (controller._byobRequest === null && controller._pendingPullIntos.getLength() > 0) {
     const firstDescriptor = controller._pendingPullIntos.peek();
     const view = new Uint8Array(firstDescriptor.buffer,
                                 firstDescriptor.byteOffset + firstDescriptor.bytesFilled,
@@ -877,7 +877,7 @@ function ReadableByteStreamControllerGetDesiredSize(controller: ReadableByteStre
 }
 
 export function ReadableByteStreamControllerRespond(controller: ReadableByteStreamController, bytesWritten: number) {
-  assert(controller._pendingPullIntos.length > 0);
+  assert(controller._pendingPullIntos.getLength() > 0);
 
   const firstDescriptor = controller._pendingPullIntos.peek();
   const state = controller._controlledReadableByteStream._state;
@@ -903,7 +903,7 @@ export function ReadableByteStreamControllerRespond(controller: ReadableByteStre
 
 export function ReadableByteStreamControllerRespondWithNewView(controller: ReadableByteStreamController,
                                                                view: ArrayBufferView) {
-  assert(controller._pendingPullIntos.length > 0);
+  assert(controller._pendingPullIntos.getLength() > 0);
   assert(!IsDetachedBuffer(view.buffer));
 
   const firstDescriptor = controller._pendingPullIntos.peek();

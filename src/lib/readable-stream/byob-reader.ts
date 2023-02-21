@@ -52,7 +52,7 @@ export function ReadableStreamFulfillReadIntoRequest(stream: ReadableByteStream,
                                                      done: boolean) {
   const reader = stream._reader as ReadableStreamBYOBReader;
 
-  assert(reader._readIntoRequests.length > 0);
+  assert(reader._readIntoRequests.getLength() > 0);
 
   const readIntoRequest = reader._readIntoRequests.shift()!;
   if (done) {
@@ -63,7 +63,7 @@ export function ReadableStreamFulfillReadIntoRequest(stream: ReadableByteStream,
 }
 
 export function ReadableStreamGetNumReadIntoRequests(stream: ReadableByteStream): number {
-  return (stream._reader as ReadableStreamBYOBReader)._readIntoRequests.length;
+  return (stream._reader as ReadableStreamBYOBReader)._readIntoRequests.getLength();
 }
 
 export function ReadableStreamHasBYOBReader(stream: ReadableByteStream): boolean {
@@ -212,7 +212,7 @@ export class ReadableStreamBYOBReader {
       return;
     }
 
-    if (this._readIntoRequests.length > 0) {
+    if (this._readIntoRequests.getLength() > 0) {
       throw new TypeError('Tried to release a reader lock when that reader has pending read() calls un-settled');
     }
 

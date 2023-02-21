@@ -45,7 +45,7 @@ export function ReadableStreamAddReadRequest<R>(stream: ReadableStream<R>,
 export function ReadableStreamFulfillReadRequest<R>(stream: ReadableStream<R>, chunk: R | undefined, done: boolean) {
   const reader = stream._reader as ReadableStreamDefaultReader<R>;
 
-  assert(reader._readRequests.length > 0);
+  assert(reader._readRequests.getLength() > 0);
 
   const readRequest = reader._readRequests.shift()!;
   if (done) {
@@ -56,7 +56,7 @@ export function ReadableStreamFulfillReadRequest<R>(stream: ReadableStream<R>, c
 }
 
 export function ReadableStreamGetNumReadRequests<R>(stream: ReadableStream<R>): number {
-  return (stream._reader as ReadableStreamDefaultReader<R>)._readRequests.length;
+  return (stream._reader as ReadableStreamDefaultReader<R>)._readRequests.getLength();
 }
 
 export function ReadableStreamHasDefaultReader(stream: ReadableStream): boolean {
@@ -187,7 +187,7 @@ export class ReadableStreamDefaultReader<R = any> {
       return;
     }
 
-    if (this._readRequests.length > 0) {
+    if (this._readRequests.getLength() > 0) {
       throw new TypeError('Tried to release a reader lock when that reader has pending read() calls un-settled');
     }
 

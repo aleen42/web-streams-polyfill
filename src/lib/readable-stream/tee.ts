@@ -212,7 +212,7 @@ export function ReadableByteStreamTee(stream: ReadableByteStream): [ReadableByte
 
   function pullWithDefaultReader() {
     if (IsReadableStreamBYOBReader(reader)) {
-      assert(reader._readIntoRequests.length === 0);
+      assert(reader._readIntoRequests.getLength() === 0);
       ReadableStreamReaderGenericRelease(reader);
 
       reader = AcquireReadableStreamDefaultReader(stream);
@@ -264,10 +264,10 @@ export function ReadableByteStreamTee(stream: ReadableByteStream): [ReadableByte
         if (!canceled2) {
           ReadableByteStreamControllerClose(branch2._readableStreamController);
         }
-        if (branch1._readableStreamController._pendingPullIntos.length > 0) {
+        if (branch1._readableStreamController._pendingPullIntos.getLength() > 0) {
           ReadableByteStreamControllerRespond(branch1._readableStreamController, 0);
         }
-        if (branch2._readableStreamController._pendingPullIntos.length > 0) {
+        if (branch2._readableStreamController._pendingPullIntos.getLength() > 0) {
           ReadableByteStreamControllerRespond(branch2._readableStreamController, 0);
         }
         if (!canceled1 || !canceled2) {
@@ -283,7 +283,7 @@ export function ReadableByteStreamTee(stream: ReadableByteStream): [ReadableByte
 
   function pullWithBYOBReader(view: ArrayBufferView, forBranch2: boolean) {
     if (IsReadableStreamDefaultReader<Uint8Array>(reader)) {
-      assert(reader._readRequests.length === 0);
+      assert(reader._readRequests.getLength() === 0);
       ReadableStreamReaderGenericRelease(reader);
 
       reader = AcquireReadableStreamBYOBReader(stream);
@@ -350,7 +350,7 @@ export function ReadableByteStreamTee(stream: ReadableByteStream): [ReadableByte
           if (!byobCanceled) {
             ReadableByteStreamControllerRespondWithNewView(byobBranch._readableStreamController, chunk);
           }
-          if (!otherCanceled && otherBranch._readableStreamController._pendingPullIntos.length > 0) {
+          if (!otherCanceled && otherBranch._readableStreamController._pendingPullIntos.getLength() > 0) {
             ReadableByteStreamControllerRespond(otherBranch._readableStreamController, 0);
           }
         }

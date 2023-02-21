@@ -114,10 +114,10 @@ export class ReadableStreamDefaultController<R> {
   [PullSteps](readRequest: ReadRequest<R>): void {
     const stream = this._controlledReadableStream;
 
-    if (this._queue.length > 0) {
+    if (this._queue.getLength() > 0) {
       const chunk = DequeueValue(this);
 
-      if (this._closeRequested && this._queue.length === 0) {
+      if (this._closeRequested && this._queue.getLength() === 0) {
         ReadableStreamDefaultControllerClearAlgorithms(this);
         ReadableStreamClose(stream);
       } else {
@@ -232,7 +232,7 @@ export function ReadableStreamDefaultControllerClose(controller: ReadableStreamD
 
   controller._closeRequested = true;
 
-  if (controller._queue.length === 0) {
+  if (controller._queue.getLength() === 0) {
     ReadableStreamDefaultControllerClearAlgorithms(controller);
     ReadableStreamClose(stream);
   }

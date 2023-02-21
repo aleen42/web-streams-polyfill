@@ -14,7 +14,7 @@ export interface QueuePair<T> {
 
 export function DequeueValue<T>(container: QueueContainer<QueuePair<T>>): T {
   assert('_queue' in container && '_queueTotalSize' in container);
-  assert(container._queue.length > 0);
+  assert(container._queue.getLength() > 0);
 
   const pair = container._queue.shift()!;
   container._queueTotalSize -= pair.size;
@@ -38,7 +38,7 @@ export function EnqueueValueWithSize<T>(container: QueueContainer<QueuePair<T>>,
 
 export function PeekQueueValue<T>(container: QueueContainer<QueuePair<T>>): T {
   assert('_queue' in container && '_queueTotalSize' in container);
-  assert(container._queue.length > 0);
+  assert(container._queue.getLength() > 0);
 
   const pair = container._queue.peek();
   return pair.value;
